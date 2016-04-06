@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<style>
+.button{
+width:80px;
+height:35px;
+background-color:rgb(77, 121, 236);
+font-size:18px;
+border-radius: 10px;
+margin-top: 16px;
+}
+.back{
+width:100%;
+text-align:center;
+}
+.main{
+width: 40%;
+align-content: center;
+margin-left: 30%;
+}
+.main ol li{
+border: 1px solid #CCC;
+height:35px;
+margin-top:1px;
+line-height:35px;
+}
+.box{
+    width: 20%;
+    height: 158px;
+	line-height: 158px;
+    border: #888 solid 2px;
+	border-radius: 36px;
+	margin-left: 40%;
+	background-color:#4B4254;
+	box-shadow: 1px 2px;
+  }
+#layer{
+    font-family: Verdana;
+    font-size: 115px;
+    color: #888;
+  }
+</style>
+<script>
+window.onload = function(){
+    var oUl = document.getElementById('add');
+    var oBtn = document.getElementById('btn');
+	oBtn.onclick = function(){	
+        Lottery();		
+		clock = setTimeout(function(){
+			clearTimeout(T);  //清除定时器；
+			createLi(oUl);  //把得到的数据增加到新列中，并标记最小的数
+		},1000);	
+	}
+};
+//产生随机数，每10毫秒产生一次
+function Lottery(){
+    var lucky = parseInt(Math.random()*100);
+	var result = document.getElementById("layer");
+	if (result != null) {
+      result.innerHTML = lucky;
+    }
+	T = setTimeout('Lottery()', 10);
+}
+//读取随机框内的数字
+function getNum(){
+    var result = document.getElementById("layer");
+    return result.innerHTML;	
+}
+//把读取到随机框内的数增加到新列表中
+function createLi(oUl){
+    var newnode=document.createElement("li");
+	newnode.innerHTML = getNum();
+	oUl.appendChild(newnode);
+	changecolor(oUl);
+}
+//改变最小值的背景为黄色
+function changecolor(oUl){
+	var aLi = oUl.getElementsByTagName('li');
+	for(var i=0;i<aLi.length;i++){
+		aLi[i].style.background = 'none';
+    }
+	aLi[findMin(oUl)].style.background = 'yellow';
+}
+//寻找最小值，返回最小值的序号
+function findMin(oUl){
+    var aLi = oUl.getElementsByTagName('li');
+	var arr = [];
+	for(var i=0;i<aLi.length;i++){
+		arr.push(parseInt(aLi[i].innerHTML,10));
+	}
+	var min = arr[0];
+	var index = 0;
+	for(var i=0;i<arr.length;i++){
+		if(arr[i] < min){
+			min=arr[i];
+			index=i;
+	    }
+    }
+	return index;
+}
+</script>
+</head>
+<body>
+<div class="back">
+	<div class="box">
+		<span id="layer">00</span>
+	</div>
+	<input type="button" value="点 击" class="button" id="btn"/>
+	<div class="main">
+		<ol id="add">		
+		</ol>
+	</div>
+</div>
+</body>
+</html>

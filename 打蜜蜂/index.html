@@ -1,0 +1,296 @@
+﻿<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .feiji{width: 50px;height: 50px;background: url(feiji.png);position: absolute;left: 600px;top: 480px;}
+        .paodan{width: 6px;height: 6px;background: #CCC;position: absolute;}
+        .back{width:40%;height:520px;margin:2% 30%;border: 1px solid #CCC;}
+        .baozha{width: 50px;height: 50px;background: url(baozha.png);position: absolute;left: 600px;top: 480px;}
+        #content{width:100%;height:300px;background:#CC0;}
+        #content ul{margin:0; padding:10% 10% 10% 10%; }
+        #content ul li{width: 30px;height: 30px;background:url(mifeng.png);float: left;position:absolute;}
+        #but{height: 35px;width: 70px;border-radius: 10px;background: #5268DA;position: absolute;z-index: 100;left: 80%;top: 200px;}
+        .de{height: 35px;width: 100px;background: #5268DA;position: absolute;z-index: 100;left: 79%;top: 150px;line-height:35px;}
+        .mpaodan{width: 6px;height: 6px;background: #000;position: absolute;border-radius: 6px;}
+        .state{  width: 20%;  height: 175px;  line-height: 35px;  position: absolute;  left: 5%;  top:100px;  }
+    </style>
+    <script>
+        var x=0;
+        var img = new Image();
+        window.onload = function ()
+        {
+            var oBut = document.getElementById("but");
+            var oBack = document.getElementById("back");
+            var bLeft =  bRight =  false;
+            //开始游戏
+            var defen=document.getElementById("defen");
+            var feiji=document.getElementById("feiji");
+            var pao=document.getElementById("pao");
+            var a;//用来接收炮弹移动的定时器
+            var b;//用来接收产生炮弹的定时器
+            var c;//检测按左右键
+            var d;//蜜蜂产生子弹
+            var e;//蜜蜂子弹移动
+            img.src = 'baozha.png'; //初始化加载爆炸时的图片资源
+            mbuju();//蜜蜂布局初始化 
+            oBut.onclick=function(){
+                switch (oBut.value)
+                {
+                    case '开始':
+                        oBut.value = '暂停';
+                        a=setInterval('paodans()',900);//产生飞机炮弹
+                        b=setInterval('yidong()',30);//飞机炮弹移动
+                        d=setInterval('mpao()',900);//蜜蜂产生子弹
+                        e=setInterval('myidong()',30);//蜜蜂子弹移动
+                        c=setInterval(function ()
+                        {
+                            if (bLeft)
+                            {
+                                feiji.style.left = feiji.offsetLeft - 10 + "px";
+                            }
+                            else if (bRight)
+                            {
+                                feiji.style.left = feiji.offsetLeft + 10 + "px";
+                            }
+                            //防止溢出
+                            limit();
+                        },30);
+                        break;
+                    case '暂停':
+                        oBut.value = '开始';
+                        clearInterval(a);
+                        clearInterval(b);
+                        clearInterval(c);
+                        clearInterval(d);
+                        clearInterval(e);
+                        break;
+                }
+            };
+            //按键按下
+            document.onkeydown = function (event)
+            {
+                var event = event || window.event;
+                switch (event.keyCode)
+                {
+                    case 37:
+                        bLeft = true;
+                        break;
+                    case 39:
+                        bRight = true;
+                        break;
+                }
+                return false
+            };
+            document.onkeyup = function (event)
+            {
+                switch ((event || window.event).keyCode)
+                {
+                    case 37:
+                        bLeft = false;
+                        break;
+                    case 39:
+                        bRight = false;
+                        break;
+                }
+            };
+            //防止溢出
+            function limit()
+            {
+                var doc = [document.documentElement.clientWidth, document.documentElement.clientHeight];
+                var wi=[oBack.clientWidth, oBack.clientHeight];
+                //防止左侧溢出
+                feiji.offsetLeft-((doc[0]-wi[0])/2) <=0 && (feiji.style.left = 0+((doc[0]-wi[0])/2)+"px");
+                //防止顶部溢出
+                //feiji.offsetTop-((doc[1]-wi[1])/2)<=0 && (feiji.style.top = ((doc[1]-wi[1])/2));
+                //防止右侧溢出
+                doc[0] - feiji.offsetLeft - feiji.offsetWidth-((doc[0]-wi[0])/2) <= 0 && (feiji.style.left = doc[0] - feiji.offsetWidth-((doc[0]-wi[0])/2) + "px");
+                //防止底部溢出
+                // doc[1] - feiji.offsetTop - feiji.offsetHeight-((doc[1]-wi[1])/2) <= 0 && (feiji.style.top = doc[1] - feiji.offsetHeight-((doc[1]-wi[1])/2) + "px")
+            }
+        };
+        //创建炮弹
+        function paodans(){
+            //创建左侧炮弹
+            var newnode1=document.createElement("div");
+            newnode1.setAttribute("class","paodan");
+            newnode1.style.top=480+"px";
+            newnode1.style.left=feiji.offsetLeft+"px";
+            pao.appendChild(newnode1);
+            //创建右侧炮弹
+            var newnode2=document.createElement("div");
+            newnode2.setAttribute("class","paodan");
+            newnode2.style.left=feiji.offsetLeft+44+"px";
+            newnode2.style.top=480+"px";
+            pao.appendChild(newnode2);
+        }
+        //炮弹移动
+        function yidong(){
+            var newnodes=document.getElementsByClassName("paodan");
+            for(var i=0;i<newnodes.length;i++){
+                if(newnodes[i].offsetTop>60){
+                    newnodes[i].style.top = newnodes[i].offsetTop - 2 + "px";
+                    hit();
+                }
+                else{
+                    newnodes[i].parentNode.removeChild(newnodes[i]);
+                }
+            }
+        }
+        //蜜蜂布局初始化
+        function mbuju(){
+            var mifengs=document.getElementsByTagName("li");
+            var xx=document.documentElement.clientWidth;
+            for(var i=0;i<mifengs.length;i++){
+                if(i<8){
+                    mifengs[i].style.left=parseInt(((34+i*4)/100)*xx)+'px';
+                    mifengs[i].style.top=60+'px';
+                }else if (i>=8&&i<16){
+                    mifengs[i].style.left=parseInt(((34+(i-8)*4)/100)*xx)+'px';
+                    mifengs[i].style.top=120+'px';
+                }else if (i>=16&&i<24){
+                    mifengs[i].style.left=parseInt(((34+(i-16)*4)/100)*xx)+'px';
+                    mifengs[i].style.top=180+'px';
+                }
+            }
+        }
+        //飞机打中蜜蜂命中检测
+        function hit(){
+            var newnodess=document.getElementsByClassName("paodan");
+            var mifengs=document.getElementsByTagName("li");
+            var widt=30;
+            for(var j=0;j<mifengs.length;j++){
+                var deleteFlag = false;
+                for(var i=0;i<newnodess.length;i++){
+                    if((newnodess[i].offsetTop <= mifengs[j].offsetTop+widt) && (newnodess[i].offsetTop >= mifengs[j].offsetTop)){
+                        if((newnodess[i].offsetLeft >= mifengs[j].offsetLeft) && (newnodess[i].offsetLeft <= mifengs[j].offsetLeft+widt)){
+                            deleteFlag=true;
+                            newnodess[i].parentNode.removeChild(newnodess[i]);
+                        }
+                    }
+                }
+                if(deleteFlag){
+                    mifengs[j].parentNode.removeChild(mifengs[j]);
+                    x++;
+                }
+            }
+            defen.innerHTML=x;
+        }
+        //生成蜜蜂子弹
+        function mpao(){
+            var mifengs=document.getElementsByTagName("li");
+            var feiji=document.getElementById("feiji");
+            var mpao=document.getElementById("mpao"); //蜜蜂子弹发射区域
+            for(var j=0;j<mifengs.length;j++){
+                mifengs[j].removeAttribute("class");//移除所有蜜蜂的类
+                if((feiji.offsetLeft>mifengs[j].offsetLeft-50) && (feiji.offsetLeft<mifengs[j].offsetLeft+80)){		//判断距离飞机上边最近的蜜蜂		
+                    mifengs[j].setAttribute("class","mmpaodan");//给最近的蜜粉添加类属性
+                }
+            }
+            var mmifengs=document.getElementsByClassName("mmpaodan");//获得飞机上方的蜜蜂
+            if(mmifengs.length!=0){//如果飞机上边没有蜜蜂，跳出这个方法
+                var max=mmifengs[0].offsetTop;//定义一个距离飞机最近的蜜蜂
+                for(var n=0;n<mmifengs.length;n++){//找到距离飞机最近的蜜蜂的top值。
+                    if(max<mmifengs[n].offsetTop){
+                        max=mmifengs[n].offsetTop;
+                    }
+                }
+                for(var l=0;l<mmifengs.length;l++){//循环飞机正上方的蜜蜂
+                    if(max == mmifengs[l].offsetTop){//找到里飞机最近的蜜蜂，给他们添加炮弹
+                        var newnode3=document.createElement("div");
+                        newnode3.setAttribute("class","mpaodan");
+                        newnode3.style.top=mmifengs[l].offsetTop+30+"px";
+                        newnode3.style.left=mmifengs[l].offsetLeft+15+"px";
+                        mpao.appendChild(newnode3);
+                    }
+                }
+            }
+        }
+        //蜜蜂子弹移动
+        function myidong(){
+            var feiji=document.getElementById("feiji");
+            var mnewnodes=document.getElementsByClassName("mpaodan");
+            var lis=document.getElementsByTagName("li");
+            var flag = false;
+            if(lis.length==0){
+                alert("祝贺您已经通关！");
+                alert("重新开始游戏？");
+                location.reload();
+            }
+            for(var i=0;i<mnewnodes.length;i++){
+                if(mnewnodes[i].offsetTop<520){
+                    mnewnodes[i].style.top = mnewnodes[i].offsetTop + 2 + "px";
+                    flag = mhit();
+                }
+                else{
+                    mnewnodes[i].parentNode.removeChild(mnewnodes[i]);
+                }
+            }
+            if(flag){
+                alert("游戏结束");
+                alert("重新开始游戏？");
+                location.reload();
+            }
+        }
+        //蜜蜂命中飞机检测
+        function mhit(){
+            var mpaodans=document.getElementsByClassName("mpaodan");
+            var feiji=document.getElementById("feiji");
+            var tt=false;
+            for(var k=0;k<mpaodans.length;k++){
+                if((feiji.offsetTop <= mpaodans[k].offsetTop) && (feiji.offsetTop+50 >= mpaodans[k].offsetTop)){
+                    if((feiji.offsetLeft-4<= mpaodans[k].offsetLeft) && (feiji.offsetLeft+50 >= mpaodans[k].offsetLeft)){
+                        feiji.setAttribute("class","baozha");//飞机被子弹撞到后，加载飞机爆炸图片
+                        tt=true;
+                    }
+                }
+            }
+            return tt;
+        }
+    </script>
+</head>
+
+<body>
+<div class="back" id="back">
+    <div id="content">
+        <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    <div id="mpao"></div>
+    <div id="pao"></div>
+    <div id="feiji" class="feiji" background="red"></div>
+</div>
+<div class="de">得分：
+    <span id="defen">0</span>
+</div>
+<div class="state">说明：通过点击开始按钮开始游戏，<br>
+    开始游戏后会有暂停按钮可以暂停，<br>
+    通过键盘上的“←”、“→”控制飞机左右移动，<br>
+    打死一个蜜蜂得1分。<br>
+</div>
+<input id="but" type="button" value="开始">
+</body>
+</html>
